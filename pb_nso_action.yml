@@ -1,0 +1,25 @@
+---
+  - name: NSO_ACTION MODULE
+    hosts: localhost
+    gather_facts: no 
+
+    tasks:  
+    - name: IMPORT CREDS
+      include_vars:
+        file: creds.yml
+        
+    - name: NSO_ACTION - SYNC NSO DEVICE
+      cisco.nso.nso_action:
+        url: http://{{ nso_hostname }}/jsonrpc
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        path: /ncs:devices/device{ce0}/sync-from
+        input: {}
+    
+    - name: NSO_ACTION - CHECK SYNC
+      cisco.nso.nso_action:
+        url: "http://{{ nso_hostname }}/jsonrpc"
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        path: /ncs:devices/check-sync
+        input: {}

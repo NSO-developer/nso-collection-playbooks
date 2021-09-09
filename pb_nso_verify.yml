@@ -1,0 +1,20 @@
+---
+  - name: NSO_VERIFY MODULE
+    hosts: localhost
+    gather_facts: no 
+
+    tasks:  
+    - name: IMPORT CREDS
+      include_vars:
+        file: creds.yml
+
+    - name: NSO_VERIFY - VERIFY CONFIGURATION DATA
+      cisco.nso.nso_verify:
+        url: http://{{ nso_hostname }}/jsonrpc
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        data:
+            tailf-ncs:devices:
+              device:
+              - name: "{{ item }}"
+      loop: "{{ devices }}"

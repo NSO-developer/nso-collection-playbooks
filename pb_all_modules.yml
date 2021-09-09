@@ -1,0 +1,85 @@
+---
+  - name: EXECUTE ALL NSO COLLECTION MODULES
+    hosts: localhost
+    gather_facts: no 
+
+    tasks:  
+    - name: IMPORT CREDS
+      include_vars:
+        file: creds.yml
+
+    - name: CREATE DEVICE IN NSO
+      cisco.nso.nso_config:
+        url: "http://{{ nso_hostname }}/jsonrpc"
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        data:
+          tailf-ncs:devices:
+            device:
+            - address: "{{ item }}"
+              name: "{{ item }}"
+              authgroup: "default"
+              device-type:
+                cli:
+                  ned-id: "cisco-nx-cli-3.0"
+              port: "22"
+              state:
+                admin-state: "unlocked"
+      loop: "{{ devices }}"
+
+    - name: NSO_SHOW - SHOW DEVICES INCLUDING OPERATIONAL DATA
+      cisco.nso.nso_show:
+        url: "http://{{ nso_hostname }}/jsonrpc"
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        path: /ncs:devices/device{ce0}
+        operational: true
+      ignore_errors: true
+      register: nso_show_result
+
+    - name: DISPLAY OUTPUT FROM NSO_SHOW
+      debug:
+        var: nso_show_result
+
+    - name: NSO_ACTION - SYNC NSO DEVICE
+      cisco.nso.nso_action:
+        url: http://{{ nso_hostname }}/jsonrpc
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        path: /ncs:devices/device{ce0}/sync-from
+        input: {}
+    
+    - name: NSO_ACTION - CHECK SYNC
+      cisco.nso.nso_action:
+        url: "http://{{ nso_hostname }}/jsonrpc"
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        path: /ncs:devices/check-sync
+        input: {}
+
+    - name: NSO_QUERY - SELECT DEVICE NAME AND DESCRIPTION
+      cisco.nso.nso_query:
+        url: http://{{ nso_hostname }}/jsonrpc
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        xpath: /ncs:devices/device
+        fields:
+        - name
+        - description
+      register: nso_query_result
+
+    - name: DISPLAY NSO_QUERY RESULT
+      debug:
+        var: nso_query_result
+   
+    - name: NSO_VERIFY - VERIFY CONFIGURATION DATA
+      cisco.nso.nso_verify:
+        url: http://{{ nso_hostname }}/jsonrpc
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        data:
+            tailf-ncs:devices:
+              device:
+              - name: "{{ item }}"
+      loop: "{{ devices }}"
+

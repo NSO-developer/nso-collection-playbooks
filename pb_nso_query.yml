@@ -1,0 +1,24 @@
+---
+  - name: ADD DEVICE TO NSO
+    hosts: localhost
+    gather_facts: no 
+
+    tasks:  
+    - name: NSO_QUERY MODULE
+      include_vars:
+        file: creds.yml
+
+    - name: NSO_QUERY - SELECT DEVICE NAME AND DESCRIPTION
+      cisco.nso.nso_query:
+        url: http://{{ nso_hostname }}/jsonrpc
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        xpath: /ncs:devices/device
+        fields:
+        - name
+        - description
+      register: nso_query_result
+
+    - name: DISPLAY NSO_QUERY RESULT
+      debug:
+        var: nso_query_result

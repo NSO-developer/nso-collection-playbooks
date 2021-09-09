@@ -1,0 +1,23 @@
+---
+  - name: NSO_SHOW MODULE
+    hosts: localhost
+    gather_facts: no 
+
+    tasks:  
+    - name: IMPORT CREDS
+      include_vars:
+        file: creds.yml
+
+    - name: NSO_SHOW - SHOW DEVICES INCLUDING OPERATIONAL DATA
+      cisco.nso.nso_show:
+        url: "http://{{ nso_hostname }}/jsonrpc"
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        path: /ncs:devices/device{ce0}
+        operational: true
+      ignore_errors: true
+      register: nso_show_result
+
+    - name: DISPLAY OUTPUT FROM NSO_SHOW
+      debug:
+        var: nso_show_result

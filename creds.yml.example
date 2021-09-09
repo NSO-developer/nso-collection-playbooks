@@ -1,0 +1,4 @@
+# NSO
+nso_hostname: <HOSTNAME:PORT>
+nso_username: <NSO USER>
+nso_password: <NSO PASSWORD>
